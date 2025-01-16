@@ -5,6 +5,7 @@ import { SearchBar } from "@/components/SearchBar";
 import { StoreCard } from "@/components/StoreCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { BlockFilter } from "@/components/BlockFilter";
+import { FloorFilter } from "@/components/FloorFilter";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,6 +13,7 @@ const Index = () => {
     null
   );
   const [selectedBlock, setSelectedBlock] = useState<StoreBlock | null>(null);
+  const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
   const categories = Array.from(new Set(stores.map((store) => store.category)));
 
@@ -22,7 +24,8 @@ const Index = () => {
     const matchesCategory =
       selectedCategory === null || store.category === selectedCategory;
     const matchesBlock = selectedBlock === null || store.block === selectedBlock;
-    return matchesSearch && matchesCategory && matchesBlock;
+    const matchesFloor = selectedFloor === null || store.floor === selectedFloor;
+    return matchesSearch && matchesCategory && matchesBlock && matchesFloor;
   });
 
   return (
@@ -49,6 +52,10 @@ const Index = () => {
             <BlockFilter
               selectedBlock={selectedBlock}
               onSelectBlock={setSelectedBlock}
+            />
+            <FloorFilter
+              selectedFloor={selectedFloor}
+              onSelectFloor={setSelectedFloor}
             />
           </div>
         </div>
