@@ -1,15 +1,17 @@
 import { useState } from "react";
 import { stores } from "@/data/stores";
-import { StoreCategory } from "@/types/store";
+import { StoreCategory, StoreBlock } from "@/types/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreCard } from "@/components/StoreCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
+import { BlockFilter } from "@/components/BlockFilter";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(
     null
   );
+  const [selectedBlock, setSelectedBlock] = useState<StoreBlock | null>(null);
 
   const categories = Array.from(new Set(stores.map((store) => store.category)));
 
@@ -19,7 +21,8 @@ const Index = () => {
       .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === null || store.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesBlock = selectedBlock === null || store.block === selectedBlock;
+    return matchesSearch && matchesCategory && matchesBlock;
   });
 
   return (
@@ -37,11 +40,17 @@ const Index = () => {
       <div className="container py-8">
         <div className="mb-8 flex flex-col gap-6">
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-          <CategoryFilter
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onSelectCategory={setSelectedCategory}
-          />
+          <div className="flex flex-col gap-4">
+            <CategoryFilter
+              categories={categories}
+              selectedCategory={selectedCategory}
+              onSelectCategory={setSelectedCategory}
+            />
+            <BlockFilter
+              selectedBlock={selectedBlock}
+              onSelectBlock={setSelectedBlock}
+            />
+          </div>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
