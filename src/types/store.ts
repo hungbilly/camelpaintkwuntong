@@ -7,7 +7,7 @@ export type StoreCategory =
   | "Entertainment"
   | "Services";
 
-export type StoreBlock = "A" | "B" | "C";
+export type StoreBlock = "1" | "2" | "3";
 
 export interface Store {
   id: string;

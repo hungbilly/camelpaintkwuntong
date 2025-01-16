@@ -10,7 +10,7 @@ export const BlockFilter = ({
   selectedBlock,
   onSelectBlock,
 }: BlockFilterProps) => {
-  const blocks: StoreBlock[] = ["A", "B", "C"];
+  const blocks: StoreBlock[] = ["1", "2", "3"];
 
   return (
     <div className="flex flex-wrap gap-2">
