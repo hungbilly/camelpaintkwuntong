@@ -5,6 +5,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
+import { Upload, Loader2 } from "lucide-react";
 
 interface StoreFormData {
   name: string;
@@ -24,6 +26,8 @@ interface StoreFormProps {
 }
 
 export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps) => {
+  const { toast } = useToast();
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState<StoreFormData>({
     name: initialData?.name || "",
     category: initialData?.category || "" as StoreCategory,
@@ -41,6 +45,49 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
       ...formData,
       instagram_link: formData.instagram_link ? `https://instagram.com/${formData.instagram_link.replace('@', '')}` : ''
     });
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/functions/v1/upload-store-image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) throw new Error(data.error);
+
+      setFormData(prev => ({ ...prev, image: data.url }));
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image. " + error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -149,14 +196,47 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="image">Image URL (Optional)</Label>
-        <Input
-          id="image"
-          type="url"
-          value={formData.image}
-          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-          placeholder="https://example.com/image.jpg"
-        />
+        <Label>Store Image</Label>
+        <div className="flex flex-col gap-4">
+          {formData.image && (
+            <img 
+              src={formData.image} 
+              alt="Store preview" 
+              className="w-full h-48 object-cover rounded-md"
+            />
+          )}
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full gap-2"
+              disabled={uploading}
+              onClick={() => document.getElementById('image-upload')?.click()}
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Upload className="h-4 w-4" />
+              )}
+              Upload Image
+            </Button>
+            <Input
+              id="image-upload"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageUpload}
+              disabled={uploading}
+            />
+            <Input
+              type="url"
+              value={formData.image}
+              onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+              placeholder="Or paste image URL"
+              className="flex-1"
+            />
+          </div>
+        </div>
       </div>
 
       <Button type="submit" className="w-full">{submitLabel}</Button>
