@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface AddStoreDialogProps {
   onAddStore: (store: Store) => void;
@@ -27,17 +28,32 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
     image: "",
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    const newStore: Store = {
-      id: Date.now().toString(),
+    const newStore = {
       ...formData,
       floor: parseInt(formData.floor),
       image: formData.image || "https://images.unsplash.com/photo-1441984904996-e0b6ba687e04?w=400&q=80"
     };
 
-    onAddStore(newStore);
+    const { data, error } = await supabase
+      .from("stores")
+      .insert(newStore)
+      .select()
+      .single();
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add store. " + error.message,
+        variant: "destructive",
+      });
+      console.error("Error adding store:", error);
+      return;
+    }
+
+    onAddStore(data);
     setOpen(false);
     setFormData({
       name: "",
