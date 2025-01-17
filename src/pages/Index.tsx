@@ -24,13 +24,21 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
 
-  const { data: bannerConfig, refetch: refetchBanner } = useQuery({
+  const defaultBannerConfig = {
+    id: '',
+    image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
+    title: "Mall Directory",
+    subtitle: "Find your favorite stores with ease"
+  };
+
+  const { data: bannerConfig = defaultBannerConfig, refetch: refetchBanner } = useQuery({
     queryKey: ['banner_config'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('banner_config')
         .select('*')
-        .single();
+        .limit(1)
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching banner config:', error);
@@ -39,15 +47,10 @@ const Index = () => {
           description: "Failed to load banner configuration",
           variant: "destructive",
         });
-        return {
-          id: '',
-          image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
-          title: "Mall Directory",
-          subtitle: "Find your favorite stores with ease"
-        };
+        return defaultBannerConfig;
       }
 
-      return data;
+      return data || defaultBannerConfig;
     }
   });
 
@@ -110,20 +113,20 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div 
         className="relative h-[40vh] w-full bg-cover bg-center"
-        style={{ backgroundImage: `url('${bannerConfig?.image_url}')` }}
+        style={{ backgroundImage: `url('${bannerConfig.image_url}')` }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="container relative flex h-full flex-col items-center justify-center gap-6 text-white">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold sm:text-5xl">{bannerConfig?.title}</h1>
-            {isAdmin && bannerConfig?.id && (
+            <h1 className="text-4xl font-bold sm:text-5xl">{bannerConfig.title}</h1>
+            {isAdmin && bannerConfig.id && (
               <BannerConfigDialog 
                 currentConfig={bannerConfig}
                 onUpdate={refetchBanner}
               />
             )}
           </div>
-          <p className="text-xl">{bannerConfig?.subtitle}</p>
+          <p className="text-xl">{bannerConfig.subtitle}</p>
         </div>
       </div>
 
