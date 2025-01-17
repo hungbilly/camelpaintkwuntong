@@ -1,7 +1,7 @@
 import { Store } from "@/types/store";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Edit, Trash2, Upload } from "lucide-react";
+import { MapPin, Edit, Trash2, Instagram } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
     floor: store.floor.toString(),
     block: store.block,
     image: store.image || "",
+    instagram_link: store.instagram_link || "",
   });
 
   const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -140,11 +141,23 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
         </div>
         <p className="mb-2 text-sm text-muted-foreground">{store.description}</p>
         <div className="flex items-center justify-between">
-          <div className="flex items-center text-sm text-muted-foreground">
-            <MapPin className="mr-1 h-4 w-4" />
-            <span>
-              {store.location} - Floor {store.floor}
-            </span>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center text-sm text-muted-foreground">
+              <MapPin className="mr-1 h-4 w-4" />
+              <span>
+                {store.location} - Floor {store.floor}
+              </span>
+            </div>
+            {store.instagram_link && (
+              <a
+                href={store.instagram_link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-pink-500 hover:text-pink-600 transition-colors"
+              >
+                <Instagram className="h-4 w-4" />
+              </a>
+            )}
           </div>
           {isAdmin && (
             <div className="flex gap-2">
@@ -247,6 +260,17 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
                             </SelectContent>
                           </Select>
                         </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="instagram">Instagram Link</Label>
+                        <Input
+                          id="instagram"
+                          type="url"
+                          value={formData.instagram_link}
+                          onChange={(e) => setFormData({ ...formData, instagram_link: e.target.value })}
+                          placeholder="https://instagram.com/storename"
+                        />
                       </div>
 
                       <div className="space-y-2">

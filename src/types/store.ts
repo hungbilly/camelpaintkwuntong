@@ -18,4 +18,5 @@ export interface Store {
   floor: number;
   block: StoreBlock;
   image: string;
+  instagram_link?: string;
 }

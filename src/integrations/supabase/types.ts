@@ -18,6 +18,7 @@ export type Database = {
           floor: number
           id: string
           image: string | null
+          instagram_link: string | null
           location: string
           name: string
           updated_at: string
@@ -30,6 +31,7 @@ export type Database = {
           floor: number
           id?: string
           image?: string | null
+          instagram_link?: string | null
           location: string
           name: string
           updated_at?: string
@@ -42,6 +44,7 @@ export type Database = {
           floor?: number
           id?: string
           image?: string | null
+          instagram_link?: string | null
           location?: string
           name?: string
           updated_at?: string

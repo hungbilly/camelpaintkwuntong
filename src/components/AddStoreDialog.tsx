@@ -26,6 +26,7 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
     floor: "1",
     block: "" as StoreBlock,
     image: "",
+    instagram_link: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,6 +71,7 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
       floor: "1",
       block: "" as StoreBlock,
       image: "",
+      instagram_link: "",
     });
 
     toast({
@@ -183,6 +185,17 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="instagram">Instagram Link (Optional)</Label>
+              <Input
+                id="instagram"
+                type="url"
+                value={formData.instagram_link}
+                onChange={(e) => setFormData({ ...formData, instagram_link: e.target.value })}
+                placeholder="https://instagram.com/storename"
+              />
             </div>
 
             <div className="space-y-2">
