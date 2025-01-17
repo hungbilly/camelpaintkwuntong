@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StoreFormData {
   name: string;
@@ -65,14 +66,15 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
     formData.append('file', file);
 
     try {
-      const response = await fetch('/functions/v1/upload-store-image', {
-        method: 'POST',
+      const { data, error } = await supabase.functions.invoke('upload-store-image', {
         body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
-
-      const data = await response.json();
       
-      if (!response.ok) throw new Error(data.error);
+      if (error) throw error;
+      if (!data?.url) throw new Error('No URL returned from upload');
 
       setFormData(prev => ({ ...prev, image: data.url }));
       toast({
@@ -80,9 +82,10 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
         description: "Image uploaded successfully",
       });
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         title: "Error",
-        description: "Failed to upload image. " + error.message,
+        description: "Failed to upload image. " + (error as Error).message,
         variant: "destructive",
       });
     } finally {
