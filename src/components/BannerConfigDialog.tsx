@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BannerConfig {
+  id: string;
   image_url: string;
   title: string;
   subtitle: string;
@@ -36,7 +37,7 @@ export function BannerConfigDialog({ onUpdate, currentConfig }: BannerConfigDial
           title: config.title,
           subtitle: config.subtitle,
         })
-        .eq('id', '1');
+        .eq('id', config.id);
 
       if (error) throw error;
 
@@ -48,6 +49,7 @@ export function BannerConfigDialog({ onUpdate, currentConfig }: BannerConfigDial
       onUpdate();
       setOpen(false);
     } catch (error) {
+      console.error('Error updating banner config:', error);
       toast({
         title: "Error",
         description: "Failed to update banner configuration",

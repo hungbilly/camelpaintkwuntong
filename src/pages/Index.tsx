@@ -22,6 +22,7 @@ const Index = () => {
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [bannerConfig, setBannerConfig] = useState({
+    id: '',
     image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
     title: "Mall Directory",
     subtitle: "Find your favorite stores with ease"
@@ -99,7 +100,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Hero Section */}
       <div 
         className="relative h-[40vh] w-full bg-cover bg-center"
         style={{ backgroundImage: `url('${bannerConfig.image_url}')` }}
