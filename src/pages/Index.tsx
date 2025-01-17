@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { stores as initialStores } from "@/data/stores";
 import { Store, StoreCategory, StoreBlock } from "@/types/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreCard } from "@/components/StoreCard";
@@ -8,6 +7,7 @@ import { CategoryFilter } from "@/components/CategoryFilter";
 import { BlockFilter } from "@/components/BlockFilter";
 import { FloorFilter } from "@/components/FloorFilter";
 import { AddStoreDialog } from "@/components/AddStoreDialog";
+import { BannerConfigDialog } from "@/components/BannerConfigDialog";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,6 +21,11 @@ const Index = () => {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [bannerConfig, setBannerConfig] = useState({
+    image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
+    title: "Mall Directory",
+    subtitle: "Find your favorite stores with ease"
+  });
 
   const { data: stores = [], refetch: refetchStores } = useQuery({
     queryKey: ['stores'],
@@ -34,25 +39,40 @@ const Index = () => {
     }
   });
 
+  const fetchBannerConfig = async () => {
+    const { data, error } = await supabase
+      .from('banner_config')
+      .select('*')
+      .single();
+
+    if (!error && data) {
+      setBannerConfig(data);
+    }
+  };
+
   useEffect(() => {
-    const checkAdmin = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setIsAuthenticated(!!session);
-      
-      if (!session) {
-        setIsAdmin(false);
-        return;
-      }
+    fetchBannerConfig();
+  }, []);
 
-      const { data: roles } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", session.user.id)
-        .single();
+  const checkAdmin = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    setIsAuthenticated(!!session);
+    
+    if (!session) {
+      setIsAdmin(false);
+      return;
+    }
 
-      setIsAdmin(roles?.role === "admin");
-    };
+    const { data: roles } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", session.user.id)
+      .single();
 
+    setIsAdmin(roles?.role === "admin");
+  };
+
+  useEffect(() => {
     checkAdmin();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
@@ -61,17 +81,6 @@ const Index = () => {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const categories = Array.from(new Set(stores.map((store) => store.category)));
-
-  const handleAddStore = (newStore: Store) => {
-    refetchStores();
-  };
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/login");
-  };
 
   const filteredStores = stores.filter((store) => {
     const matchesSearch = store.name
@@ -87,11 +96,22 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <div className="relative h-[40vh] w-full bg-[url('https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80')] bg-cover bg-center">
+      <div 
+        className="relative h-[40vh] w-full bg-cover bg-center"
+        style={{ backgroundImage: `url('${bannerConfig.image_url}')` }}
+      >
         <div className="absolute inset-0 bg-black/50" />
         <div className="container relative flex h-full flex-col items-center justify-center gap-6 text-white">
-          <h1 className="text-4xl font-bold sm:text-5xl">Mall Directory</h1>
-          <p className="text-xl">Find your favorite stores with ease</p>
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl font-bold sm:text-5xl">{bannerConfig.title}</h1>
+            {isAdmin && (
+              <BannerConfigDialog 
+                currentConfig={bannerConfig}
+                onUpdate={fetchBannerConfig}
+              />
+            )}
+          </div>
+          <p className="text-xl">{bannerConfig.subtitle}</p>
         </div>
       </div>
 
@@ -101,12 +121,15 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
             <div className="flex items-center gap-4">
-              {isAdmin && <AddStoreDialog onAddStore={handleAddStore} />}
+              {isAdmin && <AddStoreDialog onAddStore={refetchStores} />}
               {isAuthenticated && (
                 <Button
                   variant="outline"
                   className="gap-2"
-                  onClick={handleLogout}
+                  onClick={async () => {
+                    await supabase.auth.signOut();
+                    navigate("/login");
+                  }}
                 >
                   <LogOut className="h-4 w-4" />
                   Logout
@@ -116,7 +139,7 @@ const Index = () => {
           </div>
           <div className="flex flex-col gap-4">
             <CategoryFilter
-              categories={categories}
+              categories={Array.from(new Set(stores.map((store) => store.category)))}
               selectedCategory={selectedCategory}
               onSelectCategory={setSelectedCategory}
             />
