@@ -188,13 +188,12 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="instagram">Instagram Link (Optional)</Label>
+              <Label htmlFor="instagram">Instagram Username (Optional)</Label>
               <Input
                 id="instagram"
-                type="url"
-                value={formData.instagram_link}
-                onChange={(e) => setFormData({ ...formData, instagram_link: e.target.value })}
-                placeholder="https://instagram.com/storename"
+                value={formData.instagram_link?.replace('https://instagram.com/', '') || ''}
+                onChange={(e) => setFormData({ ...formData, instagram_link: `https://instagram.com/${e.target.value.replace('@', '')}` })}
+                placeholder="@storename or storename"
               />
             </div>
 

@@ -263,13 +263,12 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="instagram">Instagram Link</Label>
+                        <Label htmlFor="instagram">Instagram Username</Label>
                         <Input
                           id="instagram"
-                          type="url"
-                          value={formData.instagram_link}
-                          onChange={(e) => setFormData({ ...formData, instagram_link: e.target.value })}
-                          placeholder="https://instagram.com/storename"
+                          value={formData.instagram_link?.replace('https://instagram.com/', '') || ''}
+                          onChange={(e) => setFormData({ ...formData, instagram_link: `https://instagram.com/${e.target.value.replace('@', '')}` })}
+                          placeholder="@storename or storename"
                         />
                       </div>
 
