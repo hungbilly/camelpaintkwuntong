@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { stores as initialStores } from "@/data/stores";
 import { Store, StoreCategory, StoreBlock } from "@/types/store";
 import { SearchBar } from "@/components/SearchBar";
@@ -7,8 +8,12 @@ import { CategoryFilter } from "@/components/CategoryFilter";
 import { BlockFilter } from "@/components/BlockFilter";
 import { FloorFilter } from "@/components/FloorFilter";
 import { AddStoreDialog } from "@/components/AddStoreDialog";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(
@@ -21,6 +26,11 @@ const Index = () => {
 
   const handleAddStore = (newStore: Store) => {
     setStores((prevStores) => [...prevStores, newStore]);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/login");
   };
 
   const filteredStores = stores.filter((store) => {
@@ -50,7 +60,17 @@ const Index = () => {
         <div className="mb-8 flex flex-col gap-6">
           <div className="flex items-center justify-between">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
-            <AddStoreDialog onAddStore={handleAddStore} />
+            <div className="flex items-center gap-4">
+              <AddStoreDialog onAddStore={handleAddStore} />
+              <Button
+                variant="outline"
+                className="gap-2"
+                onClick={handleLogout}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </div>
           </div>
           <div className="flex flex-col gap-4">
             <CategoryFilter
