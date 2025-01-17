@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Store } from "@/types/store";
+import { Store, StoreCategory, StoreBlock } from "@/types/store";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -41,8 +41,8 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
 
     const storeData: Store = {
       ...data,
-      category: data.category,
-      block: data.block
+      category: data.category as StoreCategory,
+      block: data.block as StoreBlock
     };
 
     onAddStore(storeData);
