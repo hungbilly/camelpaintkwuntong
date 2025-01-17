@@ -15,11 +15,22 @@ const Login = () => {
       async (event, session) => {
         if (event === "SIGNED_IN") {
           // Check if user has admin role
-          const { data: roles } = await supabase
+          const { data: roles, error } = await supabase
             .from("user_roles")
             .select("role")
             .eq("user_id", session?.user?.id)
-            .single();
+            .maybeSingle();
+
+          if (error) {
+            console.error("Error fetching user role:", error);
+            await supabase.auth.signOut();
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "There was an error checking your access. Please try again.",
+            });
+            return;
+          }
 
           if (roles?.role === "admin") {
             navigate("/");
