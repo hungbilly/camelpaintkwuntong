@@ -1,7 +1,7 @@
 import { Store } from "@/types/store";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Edit, Trash2 } from "lucide-react";
+import { MapPin, Edit, Trash2, Upload } from "lucide-react";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ interface StoreCardProps {
 export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => {
   const { toast } = useToast();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [formData, setFormData] = useState({
     name: store.name,
     category: store.category,
@@ -31,6 +32,45 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
     block: store.block,
     image: store.image || "",
   });
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      if (!event.target.files || event.target.files.length === 0) {
+        return;
+      }
+      setUploading(true);
+      const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${crypto.randomUUID()}.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('store-images')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('store-images')
+        .getPublicUrl(filePath);
+
+      setFormData({ ...formData, image: publicUrl });
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to upload image",
+        variant: "destructive",
+      });
+      console.error("Error uploading image:", error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this store?")) return;
@@ -210,13 +250,24 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="image">Image URL</Label>
-                        <Input
-                          id="image"
-                          type="url"
-                          value={formData.image}
-                          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                        />
+                        <Label htmlFor="image">Store Image</Label>
+                        <div className="flex gap-2">
+                          <Input
+                            id="image"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleImageUpload}
+                            disabled={uploading}
+                          />
+                          {uploading && <span>Uploading...</span>}
+                        </div>
+                        {formData.image && (
+                          <img 
+                            src={formData.image} 
+                            alt="Store preview" 
+                            className="mt-2 h-32 w-full object-cover rounded-md"
+                          />
+                        )}
                       </div>
 
                       <Button type="submit" className="w-full">Update Store</Button>
