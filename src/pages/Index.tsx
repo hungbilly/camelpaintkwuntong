@@ -93,6 +93,10 @@ const Index = () => {
     return matchesSearch && matchesCategory && matchesBlock && matchesFloor;
   });
 
+  const handleStoreUpdate = () => {
+    refetchStores();
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
@@ -121,7 +125,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
             <div className="flex items-center gap-4">
-              {isAdmin && <AddStoreDialog onAddStore={refetchStores} />}
+              {isAdmin && <AddStoreDialog onAddStore={handleStoreUpdate} />}
               {isAuthenticated && (
                 <Button
                   variant="outline"
@@ -160,7 +164,7 @@ const Index = () => {
               key={store.id} 
               store={store} 
               isAdmin={isAdmin}
-              onStoreUpdate={refetchStores}
+              onStoreUpdate={handleStoreUpdate}
             />
           ))}
         </div>

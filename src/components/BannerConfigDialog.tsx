@@ -36,7 +36,7 @@ export function BannerConfigDialog({ onUpdate, currentConfig }: BannerConfigDial
           title: config.title,
           subtitle: config.subtitle,
         })
-        .eq('id', 1);
+        .eq('id', '1');
 
       if (error) throw error;
 
