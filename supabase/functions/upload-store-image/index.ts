@@ -7,18 +7,16 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const formData = await req.formData()
-    const file = formData.get('file')
+    const { fileName, fileType, fileData } = await req.json()
 
-    if (!file) {
+    if (!fileData || !fileName || !fileType) {
       return new Response(
-        JSON.stringify({ error: 'No file uploaded' }),
+        JSON.stringify({ error: 'Missing required file data' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
@@ -29,8 +27,15 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
+    // Convert base64 to Uint8Array
+    const base64Decoder = atob(fileData)
+    const uint8Array = new Uint8Array(base64Decoder.length)
+    for (let i = 0; i < base64Decoder.length; i++) {
+      uint8Array[i] = base64Decoder.charCodeAt(i)
+    }
+
     // Sanitize filename and generate unique path
-    const sanitizedFileName = file.name.replace(/[^\x00-\x7F]/g, '')
+    const sanitizedFileName = fileName.replace(/[^\x00-\x7F]/g, '')
     const fileExt = sanitizedFileName.split('.').pop()
     const filePath = `${crypto.randomUUID()}.${fileExt}`
 
@@ -39,8 +44,8 @@ serve(async (req) => {
     // Upload file to storage
     const { data, error: uploadError } = await supabase.storage
       .from('store-images')
-      .upload(filePath, file, {
-        contentType: file.type,
+      .upload(filePath, uint8Array, {
+        contentType: fileType,
         upsert: false
       })
 

@@ -62,25 +62,35 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
     }
 
     setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
 
     try {
-      const { data, error } = await supabase.functions.invoke('upload-store-image', {
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-      
-      if (error) throw error;
-      if (!data?.url) throw new Error('No URL returned from upload');
+      // Convert file to base64
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = async () => {
+        const base64File = reader.result?.toString().split(',')[1];
+        
+        const { data, error } = await supabase.functions.invoke('upload-store-image', {
+          body: {
+            fileName: file.name,
+            fileType: file.type,
+            fileData: base64File
+          }
+        });
+        
+        if (error) throw error;
+        if (!data?.url) throw new Error('No URL returned from upload');
 
-      setFormData(prev => ({ ...prev, image: data.url }));
-      toast({
-        title: "Success",
-        description: "Image uploaded successfully",
-      });
+        setFormData(prev => ({ ...prev, image: data.url }));
+        toast({
+          title: "Success",
+          description: "Image uploaded successfully",
+        });
+      };
+
+      reader.onerror = (error) => {
+        throw new Error('Error reading file');
+      };
     } catch (error) {
       console.error('Upload error:', error);
       toast({
@@ -92,6 +102,8 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
       setUploading(false);
     }
   };
+
+  // ... keep existing code (form JSX)
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
