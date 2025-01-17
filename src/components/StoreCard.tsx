@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface StoreCardProps {
   store: Store;
@@ -113,112 +114,114 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
                     <Edit className="h-4 w-4" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="sm:max-w-[425px] max-h-[90vh]">
                   <DialogHeader>
                     <DialogTitle>Edit Store</DialogTitle>
                   </DialogHeader>
-                  <form onSubmit={handleUpdate} className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Store Name</Label>
-                      <Input
-                        id="name"
-                        required
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="category">Category</Label>
-                      <Select
-                        value={formData.category}
-                        onValueChange={(value) => setFormData({ ...formData, category: value as Store["category"] })}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Fashion">Fashion</SelectItem>
-                          <SelectItem value="Food">Food</SelectItem>
-                          <SelectItem value="Electronics">Electronics</SelectItem>
-                          <SelectItem value="Beauty">Beauty</SelectItem>
-                          <SelectItem value="Home">Home</SelectItem>
-                          <SelectItem value="Entertainment">Entertainment</SelectItem>
-                          <SelectItem value="Services">Services</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="description">Description</Label>
-                      <Textarea
-                        id="description"
-                        required
-                        value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label htmlFor="location">Location (Wing)</Label>
-                      <Input
-                        id="location"
-                        required
-                        value={formData.location}
-                        onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
+                  <ScrollArea className="h-full max-h-[calc(90vh-8rem)] pr-4">
+                    <form onSubmit={handleUpdate} className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="block">Block</Label>
+                        <Label htmlFor="name">Store Name</Label>
+                        <Input
+                          id="name"
+                          required
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="category">Category</Label>
                         <Select
-                          value={formData.block}
-                          onValueChange={(value) => setFormData({ ...formData, block: value as Store["block"] })}
+                          value={formData.category}
+                          onValueChange={(value) => setFormData({ ...formData, category: value as Store["category"] })}
                         >
                           <SelectTrigger>
-                            <SelectValue placeholder="Select block" />
+                            <SelectValue placeholder="Select category" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">Block 1</SelectItem>
-                            <SelectItem value="2">Block 2</SelectItem>
-                            <SelectItem value="3">Block 3</SelectItem>
+                            <SelectItem value="Fashion">Fashion</SelectItem>
+                            <SelectItem value="Food">Food</SelectItem>
+                            <SelectItem value="Electronics">Electronics</SelectItem>
+                            <SelectItem value="Beauty">Beauty</SelectItem>
+                            <SelectItem value="Home">Home</SelectItem>
+                            <SelectItem value="Entertainment">Entertainment</SelectItem>
+                            <SelectItem value="Services">Services</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div className="space-y-2">
-                        <Label htmlFor="floor">Floor</Label>
-                        <Select
-                          value={formData.floor}
-                          onValueChange={(value) => setFormData({ ...formData, floor: value })}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select floor" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((floor) => (
-                              <SelectItem key={floor} value={floor.toString()}>
-                                Floor {floor}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Label htmlFor="description">Description</Label>
+                        <Textarea
+                          id="description"
+                          required
+                          value={formData.description}
+                          onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        />
                       </div>
-                    </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="image">Image URL</Label>
-                      <Input
-                        id="image"
-                        type="url"
-                        value={formData.image}
-                        onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                      />
-                    </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="location">Location (Wing)</Label>
+                        <Input
+                          id="location"
+                          required
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                        />
+                      </div>
 
-                    <Button type="submit" className="w-full">Update Store</Button>
-                  </form>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="block">Block</Label>
+                          <Select
+                            value={formData.block}
+                            onValueChange={(value) => setFormData({ ...formData, block: value as Store["block"] })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select block" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="1">Block 1</SelectItem>
+                              <SelectItem value="2">Block 2</SelectItem>
+                              <SelectItem value="3">Block 3</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="floor">Floor</Label>
+                          <Select
+                            value={formData.floor}
+                            onValueChange={(value) => setFormData({ ...formData, floor: value })}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select floor" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: 12 }, (_, i) => i + 1).map((floor) => (
+                                <SelectItem key={floor} value={floor.toString()}>
+                                  Floor {floor}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="image">Image URL</Label>
+                        <Input
+                          id="image"
+                          type="url"
+                          value={formData.image}
+                          onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                        />
+                      </div>
+
+                      <Button type="submit" className="w-full">Update Store</Button>
+                    </form>
+                  </ScrollArea>
                 </DialogContent>
               </Dialog>
               <Button 
