@@ -1,1 +1,4 @@
 project_id = "ztrmoxudskcyqodpzuub"
+
+[functions.upload-store-image]
+verify_jwt = false
