@@ -12,20 +12,43 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(null);
   const [selectedBlock, setSelectedBlock] = useState<StoreBlock | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [bannerConfig, setBannerConfig] = useState({
-    id: '',
-    image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
-    title: "Mall Directory",
-    subtitle: "Find your favorite stores with ease"
+
+  const { data: bannerConfig, refetch: refetchBanner } = useQuery({
+    queryKey: ['banner_config'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('banner_config')
+        .select('*')
+        .single();
+
+      if (error) {
+        console.error('Error fetching banner config:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load banner configuration",
+          variant: "destructive",
+        });
+        return {
+          id: '',
+          image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
+          title: "Mall Directory",
+          subtitle: "Find your favorite stores with ease"
+        };
+      }
+
+      return data;
+    }
   });
 
   const { data: stores = [], refetch: refetchStores } = useQuery({
@@ -39,21 +62,6 @@ const Index = () => {
       return data as Store[];
     }
   });
-
-  const fetchBannerConfig = async () => {
-    const { data, error } = await supabase
-      .from('banner_config')
-      .select('*')
-      .single();
-
-    if (!error && data) {
-      setBannerConfig(data);
-    }
-  };
-
-  useEffect(() => {
-    fetchBannerConfig();
-  }, []);
 
   const checkAdmin = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -102,24 +110,23 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <div 
         className="relative h-[40vh] w-full bg-cover bg-center"
-        style={{ backgroundImage: `url('${bannerConfig.image_url}')` }}
+        style={{ backgroundImage: `url('${bannerConfig?.image_url}')` }}
       >
         <div className="absolute inset-0 bg-black/50" />
         <div className="container relative flex h-full flex-col items-center justify-center gap-6 text-white">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl font-bold sm:text-5xl">{bannerConfig.title}</h1>
-            {isAdmin && (
+            <h1 className="text-4xl font-bold sm:text-5xl">{bannerConfig?.title}</h1>
+            {isAdmin && bannerConfig?.id && (
               <BannerConfigDialog 
                 currentConfig={bannerConfig}
-                onUpdate={fetchBannerConfig}
+                onUpdate={refetchBanner}
               />
             )}
           </div>
-          <p className="text-xl">{bannerConfig.subtitle}</p>
+          <p className="text-xl">{bannerConfig?.subtitle}</p>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="container py-8">
         <div className="mb-8 flex flex-col gap-6">
           <div className="flex items-center justify-between">
