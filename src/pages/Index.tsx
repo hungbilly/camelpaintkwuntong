@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { stores as initialStores } from "@/data/stores";
 import { Store, StoreCategory, StoreBlock } from "@/types/store";
@@ -16,11 +16,39 @@ const Index = () => {
   const navigate = useNavigate();
   const [stores, setStores] = useState<Store[]>(initialStores);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(
-    null
-  );
+  const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(null);
   const [selectedBlock, setSelectedBlock] = useState<StoreBlock | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsAuthenticated(!!session);
+      
+      if (!session) {
+        setIsAdmin(false);
+        return;
+      }
+
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id)
+        .single();
+
+      setIsAdmin(roles?.role === "admin");
+    };
+
+    checkAdmin();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAdmin();
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   const categories = Array.from(new Set(stores.map((store) => store.category)));
 
@@ -61,15 +89,17 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
             <div className="flex items-center gap-4">
-              <AddStoreDialog onAddStore={handleAddStore} />
-              <Button
-                variant="outline"
-                className="gap-2"
-                onClick={handleLogout}
-              >
-                <LogOut className="h-4 w-4" />
-                Logout
-              </Button>
+              {isAdmin && <AddStoreDialog onAddStore={handleAddStore} />}
+              {isAuthenticated && (
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              )}
             </div>
           </div>
           <div className="flex flex-col gap-4">
