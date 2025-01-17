@@ -11,16 +11,28 @@ import { AddStoreDialog } from "@/components/AddStoreDialog";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Index = () => {
   const navigate = useNavigate();
-  const [stores, setStores] = useState<Store[]>(initialStores);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(null);
   const [selectedBlock, setSelectedBlock] = useState<StoreBlock | null>(null);
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+
+  const { data: stores = [], refetch: refetchStores } = useQuery({
+    queryKey: ['stores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('*');
+      
+      if (error) throw error;
+      return data as Store[];
+    }
+  });
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -53,7 +65,7 @@ const Index = () => {
   const categories = Array.from(new Set(stores.map((store) => store.category)));
 
   const handleAddStore = (newStore: Store) => {
-    setStores((prevStores) => [...prevStores, newStore]);
+    refetchStores();
   };
 
   const handleLogout = async () => {
@@ -121,7 +133,12 @@ const Index = () => {
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredStores.map((store) => (
-            <StoreCard key={store.id} store={store} />
+            <StoreCard 
+              key={store.id} 
+              store={store} 
+              isAdmin={isAdmin}
+              onStoreUpdate={refetchStores}
+            />
           ))}
         </div>
 
