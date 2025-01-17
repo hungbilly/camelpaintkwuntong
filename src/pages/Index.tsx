@@ -1,13 +1,15 @@
 import { useState } from "react";
-import { stores } from "@/data/stores";
-import { StoreCategory, StoreBlock } from "@/types/store";
+import { stores as initialStores } from "@/data/stores";
+import { Store, StoreCategory, StoreBlock } from "@/types/store";
 import { SearchBar } from "@/components/SearchBar";
 import { StoreCard } from "@/components/StoreCard";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { BlockFilter } from "@/components/BlockFilter";
 import { FloorFilter } from "@/components/FloorFilter";
+import { AddStoreDialog } from "@/components/AddStoreDialog";
 
 const Index = () => {
+  const [stores, setStores] = useState<Store[]>(initialStores);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<StoreCategory | null>(
     null
@@ -16,6 +18,10 @@ const Index = () => {
   const [selectedFloor, setSelectedFloor] = useState<number | null>(null);
 
   const categories = Array.from(new Set(stores.map((store) => store.category)));
+
+  const handleAddStore = (newStore: Store) => {
+    setStores((prevStores) => [...prevStores, newStore]);
+  };
 
   const filteredStores = stores.filter((store) => {
     const matchesSearch = store.name
@@ -42,7 +48,10 @@ const Index = () => {
       {/* Main Content */}
       <div className="container py-8">
         <div className="mb-8 flex flex-col gap-6">
-          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+          <div className="flex items-center justify-between">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} />
+            <AddStoreDialog onAddStore={handleAddStore} />
+          </div>
           <div className="flex flex-col gap-4">
             <CategoryFilter
               categories={categories}
