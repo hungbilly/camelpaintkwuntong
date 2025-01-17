@@ -53,7 +53,14 @@ export const AddStoreDialog = ({ onAddStore }: AddStoreDialogProps) => {
       return;
     }
 
-    onAddStore(data);
+    // Cast the returned data to match the Store type
+    const storeData: Store = {
+      ...data,
+      category: data.category as StoreCategory,
+      block: data.block as StoreBlock
+    };
+
+    onAddStore(storeData);
     setOpen(false);
     setFormData({
       name: "",
