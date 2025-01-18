@@ -190,6 +190,7 @@ export const StoreForm = ({ initialData, onSubmit, submitLabel }: StoreFormProps
               <SelectValue placeholder="Select floor" />
             </SelectTrigger>
             <SelectContent>
+              <SelectItem value="0">G/F</SelectItem>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((floor) => (
                 <SelectItem key={floor} value={floor.toString()}>
                   Floor {floor}
