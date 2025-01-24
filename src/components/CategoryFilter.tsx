@@ -12,17 +12,27 @@ export const CategoryFilter = ({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) => {
-  // Corrected Counting Logic
+  // Normalize categories to handle "Service" and "Services" as the same
+  const normalizeCategory = (category: StoreCategory): StoreCategory => {
+    if (category === "Service") return "Services" as StoreCategory;
+    return category;
+  };
+
+  // Count categories after normalization
   const categoryCount: Record<StoreCategory, number> = categories.reduce(
     (acc, category) => {
-      acc[category] = (acc[category] || 0) + 1;
+      const normalizedCategory = normalizeCategory(category);
+      acc[normalizedCategory] = (acc[normalizedCategory] || 0) + 1;
       return acc;
     },
     {} as Record<StoreCategory, number>
   );
 
-  // Sort alphabetically (optional)
-  const uniqueCategories = Array.from(new Set(categories)).sort();
+  // Get unique normalized categories
+  const uniqueCategories = Array.from(
+    new Set(categories.map(normalizeCategory))
+  ).sort();
+
   const totalStores = categories.length;
 
   return (
