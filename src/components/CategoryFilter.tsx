@@ -29,7 +29,7 @@ export const CategoryFilter = ({
 
   // Normalize categories to handle "Service" and "Services" as the same
   const normalizeCategory = (category: string): StoreCategory => {
-    if (category === "Service") return "Services";
+    if (category === "Service") return StoreCategory.Services;
     return category as StoreCategory;
   };
 
@@ -37,8 +37,9 @@ export const CategoryFilter = ({
   const categoryCount: Record<StoreCategory, number> = stores.reduce(
     (acc, store) => {
       const normalizedCategory = normalizeCategory(store.category);
-      if (Object.values(StoreCategory).includes(normalizedCategory as any)) {
-        acc[normalizedCategory as StoreCategory] = (acc[normalizedCategory as StoreCategory] || 0) + 1;
+      const validCategories = Object.values(StoreCategory);
+      if (validCategories.includes(normalizedCategory)) {
+        acc[normalizedCategory] = (acc[normalizedCategory] || 0) + 1;
       }
       return acc;
     },
@@ -48,7 +49,9 @@ export const CategoryFilter = ({
   // Get unique normalized categories from the stores data
   const uniqueCategories = Array.from(
     new Set(stores.map(store => normalizeCategory(store.category)))
-  ).filter(category => Object.values(StoreCategory).includes(category as any)).sort() as StoreCategory[];
+  ).filter(category => 
+    Object.values(StoreCategory).includes(category)
+  ).sort() as StoreCategory[];
 
   const totalStores = stores.length;
 

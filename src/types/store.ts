@@ -1,11 +1,12 @@
-export type StoreCategory = 
-  | "Fashion"
-  | "Food"
-  | "Electronics"
-  | "Beauty"
-  | "Home"
-  | "Entertainment"
-  | "Services";
+export enum StoreCategory {
+  Fashion = "Fashion",
+  Food = "Food",
+  Electronics = "Electronics",
+  Beauty = "Beauty",
+  Home = "Home",
+  Entertainment = "Entertainment",
+  Services = "Services"
+}
 
 export type StoreBlock = "1" | "2" | "3";
 
