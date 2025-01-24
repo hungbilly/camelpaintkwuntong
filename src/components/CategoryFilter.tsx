@@ -18,6 +18,8 @@ export const CategoryFilter = ({
     return acc;
   }, {} as Record<string, number>);
 
+  // Get unique categories
+  const uniqueCategories = Array.from(new Set(categories));
   const totalStores = categories.length;
 
   return (
@@ -28,7 +30,7 @@ export const CategoryFilter = ({
       >
         All ({totalStores})
       </Button>
-      {Array.from(new Set(categories)).map((category) => (
+      {uniqueCategories.map((category) => (
         <Button
           key={category}
           variant={selectedCategory === category ? "default" : "outline"}
