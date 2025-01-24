@@ -12,19 +12,24 @@ export const CategoryFilter = ({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) => {
-  // Count stores for each category
-  const categoryCount = categories.reduce((acc, category) => {
-    acc[category] = (acc[category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
+  // Corrected Counting Logic
+  const categoryCount: Record<StoreCategory, number> = categories.reduce(
+    (acc, category) => {
+      acc[category] = (acc[category] || 0) + 1;
+      return acc;
+    },
+    {} as Record<StoreCategory, number>
+  );
 
-  // Get unique categories
-  const uniqueCategories = Array.from(new Set(categories));
+  // Sort alphabetically (optional)
+  const uniqueCategories = Array.from(new Set(categories)).sort();
   const totalStores = categories.length;
 
   return (
     <div className="flex flex-wrap gap-2">
       <Button
+        aria-label={`Show all categories, ${totalStores} stores`}
+        disabled={selectedCategory === null}
         variant={selectedCategory === null ? "default" : "outline"}
         onClick={() => onSelectCategory(null)}
       >
@@ -33,6 +38,10 @@ export const CategoryFilter = ({
       {uniqueCategories.map((category) => (
         <Button
           key={category}
+          aria-label={`Show ${category} category, ${
+            categoryCount[category]
+          } stores`}
+          disabled={selectedCategory === category}
           variant={selectedCategory === category ? "default" : "outline"}
           onClick={() => onSelectCategory(category)}
         >
