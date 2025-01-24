@@ -96,8 +96,8 @@ const Index = () => {
 
   const filteredStores = stores.filter((store) => {
     const matchesSearch = store.name
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+      ? store.name.toLowerCase().includes(searchQuery.toLowerCase())
+      : false;
     const matchesCategory =
       selectedCategory === null || store.category === selectedCategory;
     const matchesBlock = selectedBlock === null || store.block === selectedBlock;
