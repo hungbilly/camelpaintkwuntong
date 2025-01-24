@@ -19,6 +19,12 @@ export const FloorFilter = ({
       >
         All Floors
       </Button>
+      <Button
+        variant={selectedFloor === 0 ? "default" : "outline"}
+        onClick={() => onSelectFloor(0)}
+      >
+        G/F
+      </Button>
       {floors.map((floor) => (
         <Button
           key={floor}
