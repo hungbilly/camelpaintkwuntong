@@ -54,23 +54,14 @@ const Index = () => {
     }
   });
 
-  const { data: stores = [], refetch: refetchStores, isLoading } = useQuery({
+  const { data: stores = [], refetch: refetchStores } = useQuery({
     queryKey: ['stores'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
         .select('*');
       
-      if (error) {
-        console.error('Error fetching stores:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load stores",
-          variant: "destructive",
-        });
-        return [];
-      }
-      
+      if (error) throw error;
       return data as Store[];
     }
   });
@@ -105,8 +96,8 @@ const Index = () => {
 
   const filteredStores = stores.filter((store) => {
     const matchesSearch = store.name
-      ? store.name.toLowerCase().includes(searchQuery.toLowerCase())
-      : false;
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === null || store.category === selectedCategory;
     const matchesBlock = selectedBlock === null || store.block === selectedBlock;
@@ -177,24 +168,18 @@ const Index = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="text-center text-muted-foreground">
-            Loading stores...
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredStores.map((store) => (
-              <StoreCard 
-                key={store.id} 
-                store={store} 
-                isAdmin={isAdmin}
-                onStoreUpdate={handleStoreUpdate}
-              />
-            ))}
-          </div>
-        )}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredStores.map((store) => (
+            <StoreCard 
+              key={store.id} 
+              store={store} 
+              isAdmin={isAdmin}
+              onStoreUpdate={handleStoreUpdate}
+            />
+          ))}
+        </div>
 
-        {!isLoading && filteredStores.length === 0 && (
+        {filteredStores.length === 0 && (
           <div className="text-center text-muted-foreground">
             No stores found matching your criteria
           </div>
