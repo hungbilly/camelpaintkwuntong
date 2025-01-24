@@ -1,7 +1,5 @@
 import { StoreCategory } from "@/types/store";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CategoryFilterProps {
   categories: StoreCategory[];
@@ -14,64 +12,25 @@ export const CategoryFilter = ({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) => {
-  // Fetch all stores to get accurate category counts
-  const { data: stores = [] } = useQuery({
-    queryKey: ['stores'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('stores')
-        .select('*');
-      
-      if (error) throw error;
-      return data;
-    }
-  });
+  // Count stores for each category
+  const categoryCount = categories.reduce((acc, category) => {
+    acc[category] = (acc[category] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
 
-  // Normalize categories to handle "Service" and "Services" as the same
-  const normalizeCategory = (category: string): StoreCategory => {
-    if (category === "Service") return StoreCategory.Services;
-    return category as StoreCategory;
-  };
-
-  // Count categories after normalization using the stores from Supabase
-  const categoryCount: Record<StoreCategory, number> = stores.reduce(
-    (acc, store) => {
-      const normalizedCategory = normalizeCategory(store.category);
-      const validCategories = Object.values(StoreCategory);
-      if (validCategories.includes(normalizedCategory)) {
-        acc[normalizedCategory] = (acc[normalizedCategory] || 0) + 1;
-      }
-      return acc;
-    },
-    {} as Record<StoreCategory, number>
-  );
-
-  // Get unique normalized categories from the stores data
-  const uniqueCategories = Array.from(
-    new Set(stores.map(store => normalizeCategory(store.category)))
-  ).filter(category => 
-    Object.values(StoreCategory).includes(category)
-  ).sort() as StoreCategory[];
-
-  const totalStores = stores.length;
+  const totalStores = categories.length;
 
   return (
     <div className="flex flex-wrap gap-2">
       <Button
-        aria-label={`Show all categories, ${totalStores} stores`}
-        disabled={selectedCategory === null}
         variant={selectedCategory === null ? "default" : "outline"}
         onClick={() => onSelectCategory(null)}
       >
         All ({totalStores})
       </Button>
-      {uniqueCategories.map((category) => (
+      {Array.from(new Set(categories)).map((category) => (
         <Button
           key={category}
-          aria-label={`Show ${category} category, ${
-            categoryCount[category]
-          } stores`}
-          disabled={selectedCategory === category}
           variant={selectedCategory === category ? "default" : "outline"}
           onClick={() => onSelectCategory(category)}
         >
