@@ -1,5 +1,7 @@
 import { StoreCategory } from "@/types/store";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CategoryFilterProps {
   categories: StoreCategory[];
@@ -12,13 +14,26 @@ export const CategoryFilter = ({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) => {
-  // Count stores for each category
-  const categoryCount = categories.reduce((acc, category) => {
+  const { data: stores = [] } = useQuery({
+    queryKey: ['stores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('category');
+      
+      if (error) throw error;
+      return data as { category: StoreCategory }[];
+    }
+  });
+
+  // Count stores for each category using the fetched data
+  const categoryCount = stores.reduce((acc, store) => {
+    const category = store.category as StoreCategory;
     acc[category] = (acc[category] || 0) + 1;
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<StoreCategory, number>);
 
-  const totalStores = categories.length;
+  const totalStores = stores.length;
 
   return (
     <div className="flex flex-wrap gap-2">
@@ -28,13 +43,13 @@ export const CategoryFilter = ({
       >
         All ({totalStores})
       </Button>
-      {Array.from(new Set(categories)).map((category) => (
+      {categories.map((category) => (
         <Button
           key={category}
           variant={selectedCategory === category ? "default" : "outline"}
           onClick={() => onSelectCategory(category)}
         >
-          {category} ({categoryCount[category]})
+          {category} ({categoryCount[category] || 0})
         </Button>
       ))}
     </div>
