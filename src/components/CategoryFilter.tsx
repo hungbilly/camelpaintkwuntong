@@ -28,16 +28,18 @@ export const CategoryFilter = ({
   });
 
   // Normalize categories to handle "Service" and "Services" as the same
-  const normalizeCategory = (category: StoreCategory): StoreCategory => {
-    if (category === "Service") return "Services" as StoreCategory;
-    return category;
+  const normalizeCategory = (category: string): StoreCategory => {
+    if (category === "Service") return "Services";
+    return category as StoreCategory;
   };
 
   // Count categories after normalization using the stores from Supabase
   const categoryCount: Record<StoreCategory, number> = stores.reduce(
     (acc, store) => {
-      const normalizedCategory = normalizeCategory(store.category as StoreCategory);
-      acc[normalizedCategory] = (acc[normalizedCategory] || 0) + 1;
+      const normalizedCategory = normalizeCategory(store.category);
+      if (Object.values(StoreCategory).includes(normalizedCategory as any)) {
+        acc[normalizedCategory as StoreCategory] = (acc[normalizedCategory as StoreCategory] || 0) + 1;
+      }
       return acc;
     },
     {} as Record<StoreCategory, number>
@@ -45,8 +47,8 @@ export const CategoryFilter = ({
 
   // Get unique normalized categories from the stores data
   const uniqueCategories = Array.from(
-    new Set(stores.map(store => normalizeCategory(store.category as StoreCategory)))
-  ).sort();
+    new Set(stores.map(store => normalizeCategory(store.category)))
+  ).filter(category => Object.values(StoreCategory).includes(category as any)).sort() as StoreCategory[];
 
   const totalStores = stores.length;
 
