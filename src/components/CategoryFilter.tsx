@@ -1,5 +1,7 @@
 import { StoreCategory } from "@/types/store";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CategoryFilterProps {
   categories: StoreCategory[];
@@ -12,28 +14,41 @@ export const CategoryFilter = ({
   selectedCategory,
   onSelectCategory,
 }: CategoryFilterProps) => {
+  // Fetch all stores to get accurate category counts
+  const { data: stores = [] } = useQuery({
+    queryKey: ['stores'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('stores')
+        .select('*');
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
   // Normalize categories to handle "Service" and "Services" as the same
   const normalizeCategory = (category: StoreCategory): StoreCategory => {
     if (category === "Service") return "Services" as StoreCategory;
     return category;
   };
 
-  // Count categories after normalization
-  const categoryCount: Record<StoreCategory, number> = categories.reduce(
-    (acc, category) => {
-      const normalizedCategory = normalizeCategory(category);
+  // Count categories after normalization using the stores from Supabase
+  const categoryCount: Record<StoreCategory, number> = stores.reduce(
+    (acc, store) => {
+      const normalizedCategory = normalizeCategory(store.category as StoreCategory);
       acc[normalizedCategory] = (acc[normalizedCategory] || 0) + 1;
       return acc;
     },
     {} as Record<StoreCategory, number>
   );
 
-  // Get unique normalized categories
+  // Get unique normalized categories from the stores data
   const uniqueCategories = Array.from(
-    new Set(categories.map(normalizeCategory))
+    new Set(stores.map(store => normalizeCategory(store.category as StoreCategory)))
   ).sort();
 
-  const totalStores = categories.length;
+  const totalStores = stores.length;
 
   return (
     <div className="flex flex-wrap gap-2">
