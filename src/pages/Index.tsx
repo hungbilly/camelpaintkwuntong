@@ -54,14 +54,18 @@ const Index = () => {
     }
   });
 
-  const { data: stores = [], refetch: refetchStores } = useQuery({
+  const { data: stores = [], refetch: refetchStores, isLoading, error } = useQuery({
     queryKey: ['stores'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
         .select('*');
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching stores:', error);
+        throw error;
+      }
+      
       return data as Store[];
     }
   });
@@ -95,6 +99,8 @@ const Index = () => {
   }, []);
 
   const filteredStores = stores.filter((store) => {
+    if (!store) return false;
+    
     const matchesSearch = store.name && searchQuery 
       ? store.name.toLowerCase().includes(searchQuery.toLowerCase())
       : true;
@@ -102,12 +108,17 @@ const Index = () => {
       selectedCategory === null || store.category === selectedCategory;
     const matchesBlock = selectedBlock === null || store.block === selectedBlock;
     const matchesFloor = selectedFloor === null || store.floor === selectedFloor;
+    
     return matchesSearch && matchesCategory && matchesBlock && matchesFloor;
   });
 
-  const handleStoreUpdate = () => {
-    refetchStores();
-  };
+  if (isLoading) {
+    return <div className="flex items-center justify-center min-h-screen">Loading stores...</div>;
+  }
+
+  if (error) {
+    return <div className="flex items-center justify-center min-h-screen text-red-500">Error loading stores</div>;
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -135,7 +146,7 @@ const Index = () => {
           <div className="flex items-center justify-between">
             <SearchBar value={searchQuery} onChange={setSearchQuery} />
             <div className="flex items-center gap-4">
-              {isAdmin && <AddStoreDialog onAddStore={handleStoreUpdate} />}
+              {isAdmin && <AddStoreDialog onAddStore={refetchStores} />}
               {isAuthenticated && (
                 <Button
                   variant="outline"
@@ -174,7 +185,7 @@ const Index = () => {
               key={store.id} 
               store={store} 
               isAdmin={isAdmin}
-              onStoreUpdate={handleStoreUpdate}
+              onStoreUpdate={refetchStores}
             />
           ))}
         </div>
