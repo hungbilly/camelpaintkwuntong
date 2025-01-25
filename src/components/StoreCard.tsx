@@ -20,7 +20,7 @@ export const StoreCard = ({ store, isAdmin, onStoreUpdate }: StoreCardProps) => 
       </CardHeader>
       <CardContent className="p-4">
         <StoreHeader store={store} />
-        <p className="mb-2 text-sm text-muted-foreground">{store.description}</p>
+        <p className="mb-2 text-sm text-muted-foreground whitespace-pre-wrap">{store.description}</p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <StoreLocation store={store} />
