@@ -54,18 +54,14 @@ const Index = () => {
     }
   });
 
-  const { data: stores = [], refetch: refetchStores, isLoading, error } = useQuery({
+  const { data: stores = [], refetch: refetchStores } = useQuery({
     queryKey: ['stores'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('stores')
         .select('*');
       
-      if (error) {
-        console.error('Error fetching stores:', error);
-        throw error;
-      }
-      
+      if (error) throw error;
       return data as Store[];
     }
   });
@@ -99,30 +95,19 @@ const Index = () => {
   }, []);
 
   const filteredStores = stores.filter((store) => {
-    if (!store) return false;
-    
-    const matchesSearch = store.name && searchQuery 
-      ? store.name.toLowerCase().includes(searchQuery.toLowerCase())
-      : true;
+    const matchesSearch = store.name
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const matchesCategory =
       selectedCategory === null || store.category === selectedCategory;
     const matchesBlock = selectedBlock === null || store.block === selectedBlock;
     const matchesFloor = selectedFloor === null || store.floor === selectedFloor;
-    
     return matchesSearch && matchesCategory && matchesBlock && matchesFloor;
   });
 
-  const handleStoreUpdate = (_store?: Store) => {
+  const handleStoreUpdate = () => {
     refetchStores();
   };
-
-  if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading stores...</div>;
-  }
-
-  if (error) {
-    return <div className="flex items-center justify-center min-h-screen text-red-500">Error loading stores</div>;
-  }
 
   return (
     <div className="min-h-screen bg-background">
