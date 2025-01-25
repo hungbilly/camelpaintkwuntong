@@ -27,7 +27,7 @@ const Index = () => {
   const defaultBannerConfig = {
     id: '',
     image_url: "https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=1920&q=80",
-    title: "Mall Directory",
+    title: "Camel Paint Building Directory",
     subtitle: "Find your favorite stores with ease"
   };
 
