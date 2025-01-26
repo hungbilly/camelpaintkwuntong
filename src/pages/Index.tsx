@@ -9,7 +9,7 @@ import { FloorFilter } from "@/components/FloorFilter";
 import { AddStoreDialog } from "@/components/AddStoreDialog";
 import { BannerConfigDialog } from "@/components/BannerConfigDialog";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { LogOut, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -30,6 +30,39 @@ const Index = () => {
     title: "Camel Paint Building Directory",
     subtitle: "Find your favorite stores with ease"
   };
+
+  // Query for visitor count
+  const { data: visitorCount = 0 } = useQuery({
+    queryKey: ['visitor_count'],
+    queryFn: async () => {
+      if (!isAdmin) return 0;
+      
+      const { data, error } = await supabase
+        .from('visitors')
+        .select('count')
+        .single();
+      
+      if (error) {
+        console.error('Error fetching visitor count:', error);
+        return 0;
+      }
+      
+      return data?.count || 0;
+    },
+    enabled: isAdmin
+  });
+
+  // Increment visitor count on page load
+  useEffect(() => {
+    const incrementVisitorCount = async () => {
+      const { error } = await supabase.rpc('increment_visitor_count');
+      if (error) {
+        console.error('Error incrementing visitor count:', error);
+      }
+    };
+    
+    incrementVisitorCount();
+  }, []);
 
   const { data: bannerConfig = defaultBannerConfig, refetch: refetchBanner } = useQuery({
     queryKey: ['banner_config'],
@@ -127,6 +160,12 @@ const Index = () => {
             )}
           </div>
           <p className="text-xl">{bannerConfig.subtitle}</p>
+          {isAdmin && (
+            <div className="flex items-center gap-2 mt-2 bg-black/50 px-4 py-2 rounded-full">
+              <Users className="h-4 w-4" />
+              <span className="text-sm font-medium">Visitors: {visitorCount}</span>
+            </div>
+          )}
         </div>
       </div>
 
